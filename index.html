@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영화 취향 설문 체험</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .movie-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .movie-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .movie-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .question {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-number {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .question-text {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            background: white;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateX(4px);
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+            font-weight: 600;
+        }
+
+        .emoji-options {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .emoji-option {
+            padding: 20px;
+            border: 3px solid #e5e7eb;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .emoji-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-4px);
+        }
+
+        .emoji-option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .emoji {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .emoji-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .checkbox-option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .checkbox-option input {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-option label {
+            cursor: pointer;
+            font-size: 15px;
+            flex: 1;
+        }
+
+        .insight-box {
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .insight-box.show {
+            display: block;
+        }
+
+        .insight-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .insight-text {
+            font-size: 14px;
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .scene-image {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #e0e7ff, #ddd6fe);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 80px;
+        }
+
+        .recommendation-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .rec-card {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .rec-card:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .rec-poster {
+            width: 60px;
+            height: 90px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 16px;
+        }
+
+        .rec-info {
+            flex: 1;
+        }
+
+        .rec-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .rec-subtitle {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .rec-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rec-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .rec-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .rec-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .final-screen {
+            text-align: center;
+        }
+
+        .final-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .final-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .profile-summary {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .profile-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .profile-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .profile-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-value {
+            font-size: 15px;
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .data-value-box {
+            background: #dcfce7;
+            border-left: 4px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 32px;
+        }
+
+        .data-value-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #065f46;
+            margin-bottom: 12px;
+        }
+
+        .data-value-list {
+            font-size: 14px;
+            color: #047857;
+            line-height: 1.8;
+        }
+
+        .extend-option {
+            background: #fef3c7;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .extend-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .extend-desc {
+            font-size: 14px;
+            color: #78350f;
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 24px;
+            }
+
+            .movie-title {
+                font-size: 24px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .emoji-options {
+                flex-direction: column;
+            }
+
+            .timer {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="timer" id="timer">⏱️ 0초</div>
+    
+    <div class="container">
+        <div class="card">
+            <div class="movie-header">
+                <div class="movie-title">기생충 (2019)</div>
+                <div class="movie-subtitle">봉준호 감독 · 드라마/스릴러</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <!-- Q0: 전체 평점 -->
+            <div class="question active" id="q0">
+                <div class="question-number">Q1 / 6</div>
+                <div class="question-text">이 영화, 재밌게 보셨나요?</div>
+                <div class="emoji-options">
+                    <div class="emoji-option" data-value="love">
+                        <span class="emoji">😍</span>
+                        <span class="emoji-label">재밌었음</span>
+                    </div>
+                    <div class="emoji-option" data-value="ok">
+                        <span class="emoji">😐</span>
+                        <span class="emoji-label">보통</span>
+                    </div>
+                    <div class="emoji-option" data-value="bad">
+                        <span class="emoji">😒</span>
+                        <span class="emoji-label">별로</span>
+                    </div>
+                </div>
+                <div class="insight-box" id="insight0">
+                    <div class="insight-title">📊 수집되는 데이터</div>
+                    <div class="insight-text">
+                        이 한 문항이 <strong>추천의 핵심 신호(레이블)</strong>가 됩니다. 
+                        예상 응답률 80~92%. 이 답변으로 협업필터링의 기본 매트릭스가 구성됩니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q1: 추천 카드 -->
+            <div class="question" id="q1">
+                <div class="question-number">Q2 / 6</div>
+                <div class="question-text">기생충을 재밌게 본 사람들은<br>이런 영화도 좋아했어요</div>
+                <div class="recommendation-cards">
+                    <div class="rec-card">
+                        <div class="rec-poster">🎬</div>
+                        <div class="rec-info">
+                            <div class="rec-title">버닝 (2018)</div>
+                            <div class="rec-subtitle">미스터리 · 이창동</div>
+                        </div>
+                        <div class="rec-actions">
+                            <div class="rec-btn" data-rec="1" data-value="yes">👍 볼래요</div>
+                            <div class="rec-btn" data-rec="1" data-value="maybe">👀 보류</div>
+                            <div class="rec-btn" data-rec="1" data-value="no">👎 관심없음</div>
+                        </div>
+                    </div>
+                    <div class="rec-card">
+                        <div class="rec-poster">🎬</div>
+                        <div class="rec-info">
+                            <div class="rec-title">조커 (2019)</div>
+                            <div class="rec-subtitle">범죄/드라마 · 토드 필립스</div>
+                        </div>
+                        <div class="rec-actions">
+                            <div class="rec-btn" data-rec="2" data-value="yes">👍 볼래요</div>
+                            <div class="rec-btn" data-rec="2" data-value="maybe">👀 보류</div>
+                            <div class="rec-btn" data-rec="2" data-value="no">👎 관심없음</div>
+                        </div>
+                    </div>
+                    <div class="rec-card">
+                        <div class="rec-poster">🎬</div>
+                        <div class="rec-info">
+                            <div class="rec-title">설국열차 (2013)</div>
+                            <div class="rec-subtitle">SF/액션 · 봉준호</div>
+                        </div>
+                        <div class="rec-actions">
+                            <div class="rec-btn" data-rec="3" data-value="yes">👍 볼래요</div>
+                            <div class="rec-btn" data-rec="3" data-value="maybe">👀 보류</div>
+                            <div class="rec-btn" data-rec="3" data-value="no">👎 관심없음</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="insight-box" id="insight1">
+                    <div class="insight-title">📊 수집되는 데이터</div>
+                    <div class="insight-text">
+                        <strong>"암묵적 피드백"</strong>으로 매우 가치 높은 데이터입니다. 
+                        추천 3개에 대한 반응으로 유저의 장르/감독/톤 선호도를 즉시 파악할 수 있습니다. 
+                        이 데이터는 다음 추천 정확도를 크게 향상시킵니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q2: 장면 반응 -->
+            <div class="question" id="q2">
+                <div class="question-number">Q3 / 6</div>
+                <div class="question-text">다른 사람들은 이 장면에서<br>재밌었다고 답했어요</div>
+                <div class="scene-image">🏠💰</div>
+                <div style="text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 24px;">
+                    "박사장 집에서 짜파구리를 만드는 장면"
+                </div>
+                <div class="question-text" style="font-size: 18px; margin-bottom: 16px;">당신도 그렇게 느꼈나요?</div>
+                <div class="options">
+                    <div class="option" data-value="yes">예, 저도 그 장면이 재밌었어요</div>
+                    <div class="option" data-value="no">아니요, 별로였어요</div>
+                </div>
+                <div class="insight-box" id="insight2">
+                    <div class="insight-title">📊 수집되는 데이터</div>
+                    <div class="insight-text">
+                        <strong>장면 단위 반응</strong>으로 영화 내 "어떤 요소"를 좋아하는지 세밀하게 파악합니다. 
+                        같은 영화를 좋아해도 "어떤 장면"에서 공감하는지는 사람마다 다릅니다. 
+                        이 데이터로 더 정교한 취향 분석이 가능합니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q3: 이유 태그 (Yes) -->
+            <div class="question" id="q3yes">
+                <div class="question-number">Q4 / 6</div>
+                <div class="question-text">왜 그 장면이 재밌었다고<br>생각하시나요?</div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">최대 2개까지 선택 가능</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason1" value="visual">
+                        <label for="reason1">시각적으로 아름다웠어요</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason2" value="value">
+                        <label for="reason2">제 가치관과 잘 맞아떨어졌어요</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason3" value="immersion">
+                        <label for="reason3">영화에 완전히 몰입했어요</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason4" value="direction">
+                        <label for="reason4">연출/편집/리듬이 좋았어요</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason5" value="character">
+                        <label for="reason5">캐릭터에 감정이입됐어요</label>
+                    </div>
+                </div>
+                <div class="insight-box" id="insight3yes">
+                    <div class="insight-title">📊 수집되는 데이터</div>
+                    <div class="insight-text">
+                        <strong>"왜 좋아하는지"의 해석 가능한 축</strong>이 수집됩니다. 
+                        이제 추천이 단순히 "비슷한 영화"가 아니라:<br>
+                        • 시각미 선호형 → 영상미 중심 영화 추천<br>
+                        • 가치관 일치형 → 메시지 중심 영화 추천<br>
+                        • 몰입 중시형 → 서사 리듬 강한 영화 추천<br>
+                        처럼 <strong>설명 가능한 추천</strong>으로 진화합니다!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q3: 이유 태그 (No) -->
+            <div class="question" id="q3no">
+                <div class="question-number">Q4 / 6</div>
+                <div class="question-text">왜 그 장면이 별로였다고<br>생각하시나요?</div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">최대 2개까지 선택 가능</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason_no1" value="value_diff">
+                        <label for="reason_no1">제 가치관과는 좀 거리가 있어요</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason_no2" value="not_fun">
+                        <label for="reason_no2">오락적으로 재미가 없었어요</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason_no3" value="no_emotion">
+                        <label for="reason_no3">별다른 감흥을 느끼지 못한 것 같아요</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason_no4" value="immersion_break">
+                        <label for="reason_no4">몰입이 깨졌어요 (개연성/연출 등)</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="reason_no5" value="predictable">
+                        <label for="reason_no5">너무 뻔했어요</label>
+                    </div>
+                </div>
+                <div class="insight-box" id="insight3no">
+                    <div class="insight-title">📊 수집되는 데이터</div>
+                    <div class="insight-text">
+                        <strong>"왜 싫어하는지"</strong>도 중요한 신호입니다. 
+                        불편함 회피형 vs 개연성 중시형 등을 구분하여 
+                        <strong>추천에서 피해야 할 요소</strong>를 필터링할 수 있습니다. 
+                        "이 유저는 뻔한 전개를 싫어한다" 같은 네거티브 신호가 추천 정확도를 높입니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q4: 대안 흐름 -->
+            <div class="question" id="q4">
+                <div class="question-number">Q5 / 6</div>
+                <div class="question-text">만약 이 영화가<br>더 밝은 결말로 끝났다면?</div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+                    (실제로는 비극적 결말)
+                </div>
+                <div class="options">
+                    <div class="option" data-value="better">더 좋았을 것 같아요</div>
+                    <div class="option" data-value="original">원래가 더 좋았을 것 같아요</div>
+                </div>
+                <div class="insight-box" id="insight4">
+                    <div class="insight-title">📊 수집되는 데이터</div>
+                    <div class="insight-text">
+                        <strong>카운터팩추얼(대안 흐름)</strong> 질문으로 
+                        "결말 톤 선호도"를 직접 측정합니다. 
+                        희망적 결말 vs 씁쓸한 결말 vs 비극적 결말 중 
+                        어떤 걸 선호하는지 파악하여 다음 추천에 바로 반영됩니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q5: 몰입도 -->
+            <div class="question" id="q5">
+                <div class="question-number">Q6 / 6</div>
+                <div class="question-text">영화를 보는 동안<br>얼마나 몰입하셨나요?</div>
+                <div class="options">
+                    <div class="option" data-value="5">완전히 몰입했어요 (5점)</div>
+                    <div class="option" data-value="4">꽤 몰입했어요 (4점)</div>
+                    <div class="option" data-value="3">중간 정도요 (3점)</div>
+                    <div class="option" data-value="2">가끔 딴 생각이 났어요 (2점)</div>
+                    <div class="option" data-value="1">거의 몰입하지 못했어요 (1점)</div>
+                </div>
+                <div class="insight-box" id="insight5">
+                    <div class="insight-title">📊 수집되는 데이터</div>
+                    <div class="insight-text">
+                        <strong>몰입도 신호</strong>로 "서사 리듬/집중 유지" 성향을 분리합니다. 
+                        같은 평점이라도 몰입도가 높으면 "진짜 좋아하는 영화"일 확률이 높습니다. 
+                        이 데이터로 재시청 의향, 추천 강도 등을 더 정확히 예측할 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 완료 화면 -->
+            <div class="question" id="final">
+                <div class="final-screen">
+                    <div class="final-title">🎉 설문 완료!</div>
+                    <div class="final-subtitle">약 45초 소요 · 6개 질문 완료</div>
+
+                    <div class="profile-summary">
+                        <div class="profile-item">
+                            <div class="profile-label">종합 반응</div>
+                            <div class="profile-value" id="finalRating">-</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">선호 요소</div>
+                            <div class="profile-value" id="finalReasons">-</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">결말 톤 선호</div>
+                            <div class="profile-value" id="finalEnding">-</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">몰입도</div>
+                            <div class="profile-value" id="finalImmersion">-</div>
+                        </div>
+                    </div>
+
+                    <div class="data-value-box">
+                        <div class="data-value-title">✨ 이 설문으로 수집된 데이터 가치</div>
+                        <div class="data-value-list">
+                            ✓ 전체 평점 (협업필터링 기본 매트릭스)<br>
+                            ✓ 장르/감독/톤 선호도 (암묵적 피드백)<br>
+                            ✓ 장면 단위 반응 (세밀한 취향 분석)<br>
+                            ✓ 선호 이유 태그 (설명 가능한 추천)<br>
+                            ✓ 결말 톤 선호도 (카운터팩추얼)<br>
+                            ✓ 몰입도 (서사 리듬 성향)<br>
+                            <br>
+                            → <strong>6개 질문으로 6개 차원의 취향 프로필 완성!</strong><br>
+                            → <strong>추천 정확도 예상 향상: 기본 대비 +40~60%</strong>
+                        </div>
+                    </div>
+
+                    <div class="extend-option">
+                        <div class="extend-title">🎯 더 정확한 추천을 원하시나요?</div>
+                        <div class="extend-desc">
+                            추가 질문 6개 (약 2분)를 답변하시면<br>
+                            취향 축이 더 정확해집니다 (페이싱/감정/연출 등)
+                        </div>
+                        <button class="btn btn-primary" onclick="alert('확장 설문은 데모 버전에서 생략되었습니다.\n실제로는 몰입/감정/서사/연출 등 10개 축의 추가 질문이 제공됩니다.')">
+                            네, 더 자세하게 답변할래요
+                        </button>
+                        <button class="btn btn-secondary" onclick="location.reload()" style="margin-top: 12px;">
+                            처음부터 다시 체험하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group" id="navigation">
+                <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" style="display: none;">이전</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>다음</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQ = 0;
+        let answers = {};
+        let startTime = Date.now();
+        let timerInterval;
+
+        // 타이머 시작
+        timerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('timer').textContent = `⏱️ ${elapsed}초`;
+        }, 1000);
+
+        // Q0: 이모지 선택
+        document.querySelectorAll('#q0 .emoji-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('#q0 .emoji-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                answers.rating = this.dataset.value;
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('insight0').classList.add('show');
+            });
+        });
+
+        // Q1: 추천 카드
+        let recAnswers = {1: null, 2: null, 3: null};
+        document.querySelectorAll('.rec-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const rec = this.dataset.rec;
+                const value = this.dataset.value;
+                
+                // 같은 영화의 다른 버튼 선택 해제
+                document.querySelectorAll(`[data-rec="${rec}"]`).forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                recAnswers[rec] = value;
+                
+                // 3개 모두 답변했는지 확인
+                if (recAnswers[1] && recAnswers[2] && recAnswers[3]) {
+                    answers.recommendations = recAnswers;
+                    document.getElementById('nextBtn').disabled = false;
+                    document.getElementById('insight1').classList.add('show');
+                }
+            });
+        });
+
+        // Q2: 장면 반응
+        document.querySelectorAll('#q2 .option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('#q2 .option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                answers.sceneReaction = this.dataset.value;
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('insight2').classList.add('show');
+            });
+        });
+
+        // Q3: 이유 태그 (체크박스)
+        function setupCheckboxes(qId, maxSelections = 2) {
+            const checkboxes = document.querySelectorAll(`#${qId} input[type="checkbox"]`);
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const checked = document.querySelectorAll(`#${qId} input[type="checkbox"]:checked`);
+                    
+                    // 최대 개수 제한
+                    if (checked.length > maxSelections) {
+                        this.checked = false;
+                        return;
+                    }
+
+                    // 선택된 항목의 부모에 selected 클래스 추가
+                    checkboxes.forEach(c => {
+                        const parent = c.closest('.checkbox-option');
+                        if (c.checked) {
+                            parent.classList.add('selected');
+                        } else {
+                            parent.classList.remove('selected');
+                        }
+                    });
+
+                    // 버튼 활성화
+                    if (checked.length > 0) {
+                        answers[qId + '_reasons'] = Array.from(checked).map(c => c.value);
+                        document.getElementById('nextBtn').disabled = false;
+                        document.getElementById('insight' + qId.slice(1)).classList.add('show');
+                    } else {
+                        document.getElementById('nextBtn').disabled = true;
+                    }
+                });
+            });
+        }
+
+        setupCheckboxes('q3yes');
+        setupCheckboxes('q3no');
+
+        // Q4: 대안 흐름
+        document.querySelectorAll('#q4 .option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('#q4 .option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                answers.counterfactual = this.dataset.value;
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('insight4').classList.add('show');
+            });
+        });
+
+        // Q5: 몰입도
+        document.querySelectorAll('#q5 .option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('#q5 .option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                answers.immersion = this.dataset.value;
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('insight5').classList.add('show');
+            });
+        });
+
+        function updateProgress() {
+            const total = 6;
+            const progress = (currentQ / total) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function nextQuestion() {
+            // 특별 처리: Q2에서 Yes/No에 따라 Q3 분기
+            if (currentQ === 2) {
+                if (answers.sceneReaction === 'yes') {
+                    showQuestion('q3yes');
+                    currentQ = 3;
+                } else {
+                    showQuestion('q3no');
+                    currentQ = 3;
+                }
+            } else if (currentQ === 3) {
+                // Q3 다음은 무조건 Q4
+                showQuestion('q4');
+                currentQ = 4;
+            } else if (currentQ === 5) {
+                // Q5 다음은 완료 화면
+                showFinalScreen();
+                clearInterval(timerInterval);
+                return;
+            } else {
+                currentQ++;
+                showQuestion('q' + currentQ);
+            }
+
+            updateProgress();
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('prevBtn').style.display = currentQ > 0 ? 'block' : 'none';
+        }
+
+        function prevQuestion() {
+            if (currentQ > 0) {
+                currentQ--;
+                showQuestion('q' + currentQ);
+                updateProgress();
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('prevBtn').style.display = currentQ > 0 ? 'block' : 'none';
+            }
+        }
+
+        function showQuestion(qId) {
+            document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+            document.getElementById(qId).classList.add('active');
+        }
+
+        function showFinalScreen() {
+            document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+            document.getElementById('final').classList.add('active');
+            document.getElementById('navigation').style.display = 'none';
+
+            // 요약 데이터 표시
+            const ratingText = {
+                'love': '😍 재밌게 봤어요',
+                'ok': '😐 보통이었어요',
+                'bad': '😒 별로였어요'
+            };
+            document.getElementById('finalRating').textContent = ratingText[answers.rating] || '-';
+
+            // 이유 태그
+            const reasons = answers.q3yes_reasons || answers.q3no_reasons || [];
+            const reasonText = {
+                'visual': '시각미',
+                'value': '가치관 일치',
+                'immersion': '몰입',
+                'direction': '연출/리듬',
+                'character': '캐릭터',
+                'value_diff': '가치관 불일치',
+                'not_fun': '재미 부족',
+                'no_emotion': '감흥 없음',
+                'immersion_break': '몰입 깨짐',
+                'predictable': '뻔함'
+            };
+            const reasonsDisplay = reasons.map(r => reasonText[r]).join(', ') || '미선택';
+            document.getElementById('finalReasons').textContent = reasonsDisplay;
+
+            // 결말 톤
+            const endingText = {
+                'better': '밝은 결말 선호',
+                'original': '현실적/비극적 결말 선호'
+            };
+            document.getElementById('finalEnding').textContent = endingText[answers.counterfactual] || '-';
+
+            // 몰입도
+            const immersionText = {
+                '5': '⭐⭐⭐⭐⭐ 완전 몰입',
+                '4': '⭐⭐⭐⭐ 꽤 몰입',
+                '3': '⭐⭐⭐ 중간',
+                '2': '⭐⭐ 가끔 딴 생각',
+                '1': '⭐ 거의 몰입 못함'
+            };
+            document.getElementById('finalImmersion').textContent = immersionText[answers.immersion] || '-';
+        }
+
+        // 초기 상태
+        updateProgress();
+    </script>
+</body>
+</html>
